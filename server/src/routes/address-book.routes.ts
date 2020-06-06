@@ -1,11 +1,14 @@
 import express from 'express';
 
+import { authorize } from '../middlewares/authorization.middleware';
 import { instance as db } from '../databases/database';
 import { IPersonCard } from '../interfaces/person-card.interface';
 
 const router = express.Router();
 
 //TODO: Do error handling globally
+
+router.use('/:userId', authorize);
 
 router.get('/:userId/:personCardId', async (req, res) => {
     const { userId, personCardId } = req.params;
