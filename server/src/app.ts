@@ -1,7 +1,9 @@
 import express from 'express';
 import cors from 'cors';
+import bodyParser from 'body-parser'
 
-import router from './api'
+import addressBookRoutes from './routes/address-book.routes'
+import userRoutes from './routes/user.routes'
 
 class App {
     public app: express.Application
@@ -9,11 +11,13 @@ class App {
     constructor() {
         this.app = express();
         this.app.use(cors());
+        this.app.use(bodyParser.json());
         this.mountRoutes();
     }
 
     private mountRoutes(): void {
-        this.app.use('/', router);
+        this.app.use('/addressbook', addressBookRoutes);
+        this.app.use('/user', userRoutes);
     }
 
     public listen(port: number) {

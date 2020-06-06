@@ -1,7 +1,7 @@
 import { IPersonCard } from "../interfaces/person-card.interface";
 
 export class PersonCard implements IPersonCard {
-    public name: string;
+    name: string;
     surname: string;
     age: number;
     phone: string;
@@ -21,5 +21,6 @@ export class PersonCard implements IPersonCard {
         this.phone = phone;
         this.email = email;
         this.address = address;
+
     }
 }

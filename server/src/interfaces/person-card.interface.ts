@@ -1,3 +1,4 @@
+
 export interface IPersonCard {
     name: string;
     surname: string;
