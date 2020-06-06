@@ -1,9 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser'
+import jwt from 'jsonwebtoken';
 
 import addressBookRoutes from './routes/address-book.routes'
-import userRoutes from './routes/user.routes'
+import authenticationRoutes from './routes/authentication.routes'
 
 class App {
     public app: express.Application
@@ -16,13 +17,13 @@ class App {
     }
 
     private mountRoutes(): void {
+        this.app.use('/authentication', authenticationRoutes);
         this.app.use('/addressbook', addressBookRoutes);
-        this.app.use('/user', userRoutes);
     }
 
     public listen(port: number) {
         this.app.listen(port, () =>
-            console.log('Example app listening on port 3000!'),
+            console.log(`Address Book App listening on port ${port}!`),
         );
     }
 }

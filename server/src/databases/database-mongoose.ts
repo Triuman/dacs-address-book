@@ -2,17 +2,28 @@ import mongoose from 'mongoose';
 import { ObjectId } from 'mongodb';
 
 import { IDatabase } from '../interfaces/database.interface'
-import { IPersonCard } from '../interfaces/person-card.interface';
-import { UserDb } from '../models/mongoose/user-schema';
-import { PersonCardDb } from '../models/mongoose/person-card-schema';
 import { IUser } from '../interfaces/user.interface';
+import { IPersonCard } from '../interfaces/person-card.interface';
+import { UserDb, IUserDb } from '../models/mongoose/user-schema';
+import { PersonCardDb } from '../models/mongoose/person-card-schema';
 
 export class Database implements IDatabase {
+    constructor() {
+        //https://mongoosejs.com/docs/deprecations.html
+        mongoose.set('useNewUrlParser', true);
+        mongoose.set('useFindAndModify', false);
+        mongoose.set('useCreateIndex', true);
+        mongoose.set('useUnifiedTopology', true);
+    }
+
     private db?: mongoose.Connection;
 
     public connect(): Promise<void> {
         return new Promise((resolve, reject) => {
-            var url = "mongodb://admin:admin123@ds125774.mlab.com:25774/dacs-address-book";
+            if (!process.env.DB_URL) {
+                throw new Error("DB_URL environment variable is undefined!");
+            }
+            const url = process.env.DB_URL || '';
 
             //TODO: handle reconnect when the connection is lost
             mongoose.connect(url, { useNewUrlParser: true });
@@ -52,11 +63,21 @@ export class Database implements IDatabase {
             }
         });
     }
-    public getUser(userId: string): Promise<IUser | null> {
+    public getUser(userId: string): Promise<IUser | null>;
+    public getUser(username: string, password?: string): Promise<IUser | null> {
         return new Promise(async (resolve, reject) => {
             try {
-                const _userId = new ObjectId(userId);
-                const userDb = UserDb.findOne({ _id: _userId });
+                let userDb;
+                if (!password) {
+                    const userId = username;
+                    const _userId = new ObjectId(userId);
+                    userDb = await UserDb.findOne({ _id: _userId });
+                } else {
+                    userDb = await UserDb.findOne({ username, password });
+                }
+                //We need this id to put into JWT token
+                if (userDb)
+                    userDb.dbId = userDb?._id;
                 resolve(userDb);
             } catch (err) {
                 reject(err);
@@ -92,10 +113,10 @@ export class Database implements IDatabase {
             }
         });
     }
-    public updatePersonCard(person: IPersonCard): Promise<void> {
+    public updatePersonCard(userId: string, cardId: string, personCard: IPersonCard): Promise<void> {
         return new Promise(async (resolve, reject) => {
             try {
-                await PersonCardDb.updateOne({ _id: person.dbId }, person);
+                await PersonCardDb.updateOne({ _id: cardId, user: { _id: userId } }, personCard);
                 console.log('updated a personCard');
                 resolve();
             } catch (err) {

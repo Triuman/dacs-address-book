@@ -1,12 +1,12 @@
 import App from "./app";
-import { Database } from "./databases/database-mongoose";
+import { instance as db } from "./databases/database";
 import { User } from "./models/user.model";
 import { PersonCard } from "./models/person-card.model";
 
-const app = new App();
-app.listen(8888);
+require('dotenv').config();
 
-const db = new Database();
+const app = new App();
+app.listen(Number(process.env.PORT) || 8888);
 
 db.connect()
     .then(() => {

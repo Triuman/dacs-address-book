@@ -2,9 +2,10 @@ import mongoose, { Schema, Document } from 'mongoose'
 
 import { IUser } from '../../interfaces/user.interface';
 import { IPersonCardDb } from './person-card-schema';
+import { ObjectId } from 'mongodb';
 
 interface IUserDb extends Document, IUser {
-    personCards: [IPersonCardDb['_id']]
+    personCards: [IPersonCardDb['_id']];
 }
 
 const UserSchema = new mongoose.Schema({
