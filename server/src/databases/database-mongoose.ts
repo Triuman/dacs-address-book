@@ -14,6 +14,7 @@ export class Database implements IDatabase {
         return new Promise((resolve, reject) => {
             var url = "mongodb://admin:admin123@ds125774.mlab.com:25774/dacs-address-book";
 
+            //TODO: handle reconnect when the connection is lost
             mongoose.connect(url, { useNewUrlParser: true });
             this.db = mongoose.connection;
             this.db.on('error', err => {
@@ -35,44 +36,111 @@ export class Database implements IDatabase {
         });
 
     }
+
+    //User
     public insertUser(user: IUser): Promise<void> {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             const userDb = new UserDb();
             userDb.username = user.username;
             userDb.password = user.password;
-            userDb.save()
-                .then(() => {
-                    console.log('inserted a new user');
-                    resolve();
-                })
-                .catch(err => reject(err));
+            try {
+                await userDb.save();
+                console.log('inserted a new user');
+                resolve();
+            } catch (err) {
+                reject(err);
+            }
         });
     }
-    public getPersonCard(userId: string, cardId: string): Promise<IPersonCard | null> {
-        const _userId = new ObjectId(userId);
-        const _cardId = new ObjectId(cardId);
-        return new Promise((resolve, reject) => {
-            PersonCardDb.findOne({ _id: _cardId, user: { _id: _userId } })
-                .then(doc => {
-                    resolve(doc);
-                })
-                .catch(err => {
-                    reject(err);
-                });
+    public getUser(userId: string): Promise<IUser | null> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const _userId = new ObjectId(userId);
+                const userDb = UserDb.findOne({ _id: _userId });
+                resolve(userDb);
+            } catch (err) {
+                reject(err);
+            }
         });
     }
-    public getAllPersonCards(): Promise<IPersonCard[]> {
-        return new Promise((resolve, reject) => { });
-    }
-    public insertPersonCard(person: IPersonCard): Promise<void> {
-        return new Promise((resolve, reject) => {
 
+    //PersonCard
+    public insertPersonCard(userId: string, personCard: IPersonCard): Promise<void> {
+        const _userId = new ObjectId(userId);
+        return new Promise(async (resolve, reject) => {
+            const personCardDb = new PersonCardDb();
+            personCardDb.user = _userId;
+            personCardDb.name = personCard.name;
+            personCardDb.surname = personCard.surname;
+            personCardDb.age = personCard.age;
+            personCardDb.phone = personCard.phone;
+            personCardDb.email = personCard.email;
+            personCardDb.address = personCard.address;
+
+            try {
+                await personCardDb.save();
+                await UserDb.findByIdAndUpdate(
+                    userId,
+                    { $push: { personCards: personCardDb._id } },
+                    { new: true }
+                );
+                console.log('inserted a new personCard');
+                resolve();
+
+            } catch (err) {
+                reject(err)
+            }
         });
     }
     public updatePersonCard(person: IPersonCard): Promise<void> {
-        return new Promise((resolve, reject) => { });
+        return new Promise(async (resolve, reject) => {
+            try {
+                await PersonCardDb.updateOne({ _id: person.dbId }, person);
+                console.log('updated a personCard');
+                resolve();
+            } catch (err) {
+                reject(err);
+            }
+        });
     }
-    public deletePersonCard(id: number): Promise<void> {
-        return new Promise((resolve, reject) => { });
+    public deletePersonCard(userId: string, cardId: string): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const personCardDb = await PersonCardDb.findOneAndDelete({ _id: cardId, user: { _id: userId } });
+                if (personCardDb) {
+                    await UserDb.findByIdAndUpdate(
+                        userId,
+                        { $pull: { personCards: new ObjectId(cardId) } }
+                    );
+                    console.log('deleted a personCard');
+                    resolve();
+                } else {
+                    reject('PersonCardDb couldnt be found');
+                }
+            } catch (err) {
+                reject(err);
+            }
+        });
+    }
+    public getPersonCard(userId: string, cardId: string): Promise<IPersonCard | null> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                //We use userId to make sure this card is of this user.
+                const personCardDb = await PersonCardDb.findOne({ _id: cardId, user: { _id: userId } });
+                resolve(personCardDb);
+            } catch (err) {
+                reject(err);
+            }
+        });
+    }
+    public getAllPersonCards(userId: string): Promise<IPersonCard[]> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const personCardDbs = await PersonCardDb.find({ user: { _id: userId } });
+                resolve(personCardDbs);
+            } catch (err) {
+                reject(err);
+            }
+        });
     }
 }

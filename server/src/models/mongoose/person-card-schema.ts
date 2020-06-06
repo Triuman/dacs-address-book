@@ -1,6 +1,11 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose, { Schema, Document, Query } from 'mongoose'
 
-import { IPersonCardDb } from '../../interfaces/person-card-db.interface';
+import { IPersonCard } from '../../interfaces/person-card.interface';
+import { IUserDb, UserDb } from './user-schema';
+
+interface IPersonCardDb extends Document, IPersonCard {
+    user: IUserDb['_id'];
+}
 
 const PersonCardSchema = new mongoose.Schema({
     id: Number,
@@ -14,4 +19,4 @@ const PersonCardSchema = new mongoose.Schema({
 });
 
 const PersonCardDb = mongoose.model<IPersonCardDb>('PersonCards', PersonCardSchema);
-export { PersonCardDb };
+export { PersonCardDb, IPersonCardDb };

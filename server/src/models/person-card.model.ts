@@ -1,6 +1,7 @@
 import { IPersonCard } from "../interfaces/person-card.interface";
 
 export class PersonCard implements IPersonCard {
+    dbId: string | null;
     name: string;
     surname: string;
     age: number;
@@ -8,13 +9,15 @@ export class PersonCard implements IPersonCard {
     email: string;
     address: string;
 
-    constructor(name: string,
+    constructor(dbId: string | null,
+        name: string,
         surname: string,
         age: number,
         phone: string,
         email: string,
         address: string) {
 
+        this.dbId = dbId;
         this.name = name;
         this.surname = surname;
         this.age = age;

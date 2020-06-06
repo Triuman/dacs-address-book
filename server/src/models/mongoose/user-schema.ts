@@ -1,6 +1,11 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose, { Schema, Document } from 'mongoose'
 
-import { IUserDb } from '../../interfaces/user-db.interface';
+import { IUser } from '../../interfaces/user.interface';
+import { IPersonCardDb } from './person-card-schema';
+
+interface IUserDb extends Document, IUser {
+    personCards: [IPersonCardDb['_id']]
+}
 
 const UserSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
@@ -9,4 +14,4 @@ const UserSchema = new mongoose.Schema({
 });
 
 const UserDb = mongoose.model<IUserDb>('Users', UserSchema);
-export { UserDb };
+export { UserDb, IUserDb };
