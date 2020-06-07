@@ -2,10 +2,8 @@ import mongoose from 'mongoose';
 import { ObjectId } from 'mongodb';
 
 import { IDatabase } from '../interfaces/database.interface'
-import { IUser } from '../interfaces/user.interface';
-import { IPersonCard } from '../interfaces/person-card.interface';
 import { UserDb, IUserDb } from '../models/mongoose/user-schema';
-import { PersonCardDb } from '../models/mongoose/person-card-schema';
+import { PersonCardDb, IPersonCardDb } from '../models/mongoose/person-card-schema';
 
 export class Database implements IDatabase {
     constructor() {
@@ -18,13 +16,11 @@ export class Database implements IDatabase {
 
     private db?: mongoose.Connection;
 
-    public connect(): Promise<void> {
+    public connect(url: string): Promise<void> {
         return new Promise((resolve, reject) => {
-            if (!process.env.DB_URL) {
-                throw new Error("DB_URL environment variable is undefined!");
+            if (!url) {
+                throw new Error("Database url is not defined!");
             }
-            const url = process.env.DB_URL || '';
-
             //TODO: handle reconnect when the connection is lost
             mongoose.connect(url, { useNewUrlParser: true });
             this.db = mongoose.connection;
@@ -49,7 +45,7 @@ export class Database implements IDatabase {
     }
 
     //User
-    public insertUser(user: IUser): Promise<void> {
+    public insertUser(user: IUserDb): Promise<string> {
         return new Promise(async (resolve, reject) => {
             const userDb = new UserDb();
             userDb.username = user.username;
@@ -57,14 +53,25 @@ export class Database implements IDatabase {
             try {
                 await userDb.save();
                 console.log('inserted a new user');
-                resolve();
+                resolve(userDb._id);
             } catch (err) {
                 reject(err);
             }
         });
     }
-    public getUser(userId: string): Promise<IUser | null>;
-    public getUser(username: string, password?: string): Promise<IUser | null> {
+    public isUsernameExist(username: string): Promise<boolean> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const userExist = await UserDb.exists({ username });
+                resolve(userExist);
+            } catch (err) {
+                reject(err);
+            }
+        });
+    }
+
+    public getUser(userId: string): Promise<IUserDb | null>;
+    public getUser(username: string, password?: string): Promise<IUserDb | null> {
         return new Promise(async (resolve, reject) => {
             try {
                 let userDb;
@@ -77,7 +84,7 @@ export class Database implements IDatabase {
                 }
                 //We need this id to put into JWT token
                 if (userDb)
-                    userDb.dbId = userDb?._id;
+                    userDb.dbId = userDb._id;
                 resolve(userDb);
             } catch (err) {
                 reject(err);
@@ -86,7 +93,7 @@ export class Database implements IDatabase {
     }
 
     //PersonCard
-    public insertPersonCard(userId: string, personCard: IPersonCard): Promise<void> {
+    public insertPersonCard(userId: string, personCard: IPersonCardDb): Promise<void> {
         const _userId = new ObjectId(userId);
         return new Promise(async (resolve, reject) => {
             const personCardDb = new PersonCardDb();
@@ -113,7 +120,7 @@ export class Database implements IDatabase {
             }
         });
     }
-    public updatePersonCard(userId: string, cardId: string, personCard: IPersonCard): Promise<void> {
+    public updatePersonCard(userId: string, cardId: string, personCard: IPersonCardDb): Promise<void> {
         return new Promise(async (resolve, reject) => {
             try {
                 await PersonCardDb.updateOne({ _id: cardId, user: { _id: userId } }, personCard);
@@ -143,7 +150,7 @@ export class Database implements IDatabase {
             }
         });
     }
-    public getPersonCard(userId: string, cardId: string): Promise<IPersonCard | null> {
+    public getPersonCard(userId: string, cardId: string): Promise<IPersonCardDb | null> {
         return new Promise(async (resolve, reject) => {
             try {
                 //We use userId to make sure this card is of this user.
@@ -154,7 +161,7 @@ export class Database implements IDatabase {
             }
         });
     }
-    public getAllPersonCards(userId: string): Promise<IPersonCard[]> {
+    public getAllPersonCards(userId: string): Promise<IPersonCardDb[]> {
         return new Promise(async (resolve, reject) => {
             try {
                 const personCardDbs = await PersonCardDb.find({ user: { _id: userId } });

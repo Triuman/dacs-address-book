@@ -1,4 +1,5 @@
 export interface IPersonCard {
+    dbId: string;
     name: string;
     surname: string;
     age: number;

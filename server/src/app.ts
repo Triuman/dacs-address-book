@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser'
-import jwt from 'jsonwebtoken';
 
 import addressBookRoutes from './routes/address-book.routes'
 import authenticationRoutes from './routes/authentication.routes'
@@ -17,6 +16,7 @@ class App {
     }
 
     private mountRoutes(): void {
+        //TODO: make an authentication middleware that decodes token and use authorization for only comparing userIds.
         this.app.use('/authentication', authenticationRoutes);
         this.app.use('/addressbook', addressBookRoutes);
     }
