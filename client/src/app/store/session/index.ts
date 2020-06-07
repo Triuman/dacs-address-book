@@ -1,16 +1,19 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+
 import { RootState, AppThunk } from '..';
-
+import { history } from '../../helpers/history'
 import { IUser } from '../../models/User.interface';
-import { ILogin } from '../../models/Login.interface';
+import { ICredentials } from '../../models/Credentials.interface';
+import { AuthenticationService } from '../../services/authentication.service';
+import { IRegisterInfo } from '../../models/RegisterInfo.interface';
 
 
-interface SessionState {
+interface ISessionState {
   user: IUser | null,
   token: string | null
 }
 
-const initialState: SessionState = {
+const initialState: ISessionState = {
   user: null,
   token: null
 };
@@ -19,36 +22,41 @@ export const sessionSlice = createSlice({
   name: 'session',
   initialState,
   reducers: {
-    login: (state, action: PayloadAction<ILogin>) => {
-
-    },
     setToken: (state, action: PayloadAction<string>) => {
-      state.token = action.payload
+      state.token = action.payload;
+      localStorage.setItem('token', state.token);
     },
-    removeToken: state => {
+    logout: state => {
       state.token = null;
+      localStorage.removeItem('token');
     }
   },
 });
 
-export const { setToken, removeToken } = sessionSlice.actions;
 
+const { setToken, logout } = sessionSlice.actions;
 
-// The function below is called a thunk and allows us to perform async logic. It
-// can be dispatched like a regular action: `dispatch(incrementAsync(10))`. This
-// will call the thunk with the `dispatch` function as the first argument. Async
-// code can then be executed and other actions can be dispatched
-export const loginAsync = (login: ILogin): AppThunk => dispatch => {
-  //TODO: call login of api service and set the token when response arrives.
-  setTimeout(() => {
-    dispatch(setToken('token'));
-  }, 1000);
+export { logout };
+
+export const login = (credentials: ICredentials): AppThunk => dispatch => {
+  AuthenticationService.login(credentials)
+    .then(authResult => {
+      //TODO: verify the token and 
+      dispatch(setToken(authResult.token));
+      history.push('/addressbook');
+    });
+};
+export const register = (registerInfo: IRegisterInfo): AppThunk => dispatch => {
+  AuthenticationService.register(registerInfo)
+    .then(authResult => {
+      //TODO: verify the token and 
+      dispatch(setToken(authResult.token));
+      history.push('/addressbook');
+    });
 };
 
-
-// The function below is called a selector and allows us to select a value from
-// the state. Selectors can also be defined inline where they're used instead of
-// in the slice file. For example: `useSelector((state: RootState) => state.counter.value)`
 export const selectToken = (state: RootState) => state.session.token;
+export const selectUser = (state: RootState) => state.session.user;
+export const selectIsLoggedIn = (state: RootState) => !!state.session.token;
 
 export default sessionSlice.reducer;

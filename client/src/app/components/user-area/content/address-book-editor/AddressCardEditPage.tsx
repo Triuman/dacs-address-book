@@ -6,7 +6,7 @@ import { history } from '../../../../helpers/history'
 import { login, selectIsLoggedIn } from '../../../../store/session';
 import { ICredentials } from '../../../../models/Credentials.interface';
 
-function LoginPage() {
+function AddressCardEditPage() {
     const [inputs, setInputs] = useState<ICredentials>({
         username: '',
         password: ''
@@ -66,4 +66,4 @@ function LoginPage() {
     );
 }
 
-export { LoginPage };
+export { AddressCardEditPage };

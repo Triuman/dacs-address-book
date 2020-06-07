@@ -3,11 +3,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import { history } from '../../../../helpers/history'
-import { login, selectIsLoggedIn } from '../../../../store/session';
-import { ICredentials } from '../../../../models/Credentials.interface';
+import { register, selectIsLoggedIn } from '../../../../store/session';
+import { IRegisterInfo } from '../../../../models/RegisterInfo.interface';
 
-function LoginPage() {
-    const [inputs, setInputs] = useState<ICredentials>({
+function RegisterPage() {
+    const [inputs, setInputs] = useState<IRegisterInfo>({
         username: '',
         password: ''
     });
@@ -33,13 +33,13 @@ function LoginPage() {
 
         setSubmitted(true);
         if (username && password) {
-            dispatch(login({ username, password }));
+            dispatch(register({ username, password }));
         }
     }
 
     return (
         <div className="col-lg-8 offset-lg-2">
-            <h2>Login</h2>
+            <h2>Register</h2>
             <form name="form" onSubmit={handleSubmit}>
                 <div className="form-group">
                     <label>Username</label>
@@ -57,13 +57,13 @@ function LoginPage() {
                 </div>
                 <div className="form-group">
                     <button className="btn btn-primary">
-                        Login
+                        Register
                     </button>
-                    <Link to="/register" className="btn btn-link">Register</Link>
+                    <Link to="/login" className="btn btn-link">Login</Link>
                 </div>
             </form>
         </div>
     );
 }
 
-export { LoginPage };
+export { RegisterPage };

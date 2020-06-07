@@ -1,22 +1,19 @@
-import WebService from "./web.service";
-import { ILogin } from "../models/Login.interface";
-import { setToken } from "../store/session";
+import { HttpService } from "./http.service";
+import { IRegisterInfo } from "../models/RegisterInfo.interface";
+import { ICredentials } from "../models/Credentials.interface";
+import { IAuthenticationResult } from "../models/AuthenticationResult.interface";
 
 export const AuthenticationService = {
     register,
-    login,
-    logout
+    login
 };
 
+const basePath = '/authentication';
 
-function register(username: string, password: string): Promise<string> {
-    return WebService.post<ILogin, string>('/user/register', { username, password });
+function register(registerInfo: IRegisterInfo): Promise<IAuthenticationResult> {
+    return HttpService.post<IRegisterInfo, IAuthenticationResult>(basePath + '/register', '', registerInfo);
 }
 
-function login(username: string, password: string): Promise<string> {
-    return WebService.post<ILogin, string>('/user/login', { username, password });
-}
-
-function logout() {
-    setToken('');
+function login(credentials: ICredentials): Promise<IAuthenticationResult> {
+    return HttpService.post<ICredentials, IAuthenticationResult>(basePath + '/login', '', credentials);
 }
