@@ -1,7 +1,7 @@
 import App from "./app";
 import { instance as db } from "./databases/database";
 
-require('dotenv').config();
+//require('dotenv').config();
 
 const app = new App();
 db.connect(<string>process.env.DB_URL)
