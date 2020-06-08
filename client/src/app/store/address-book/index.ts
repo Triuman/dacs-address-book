@@ -102,18 +102,21 @@ export const updatePersonCardAsync = (personCard: IPersonCard): AppThunk | Promi
       });
   });
 
-export const deletePersonCardAsync = (personCardId: string): AppThunk => (dispatch, getState) => {
-  const state = getState();
-  const token = selectToken(state);
-  const userId = selectUser(state)?.id;
-  if (!token || !userId) {
-    return;
-  }
-  AddressBookService.deletePersonCard(token, userId, personCardId)
-    .then(() => {
-      dispatch(deletePersonCard(personCardId));
-    });
-};
+export const deletePersonCardAsync = (personCardId: string): AppThunk | Promise<void> => (dispatch, getState) =>
+  new Promise<void>((resolve, reject) => {
+    const state = getState();
+    const token = selectToken(state);
+    const userId = selectUser(state)?.id;
+    if (!token || !userId) {
+      reject();
+      return;
+    }
+    AddressBookService.deletePersonCard(token, userId, personCardId)
+      .then(() => {
+        dispatch(deletePersonCard(personCardId));
+        resolve();
+      });
+  });
 
 export const selectAllPersonCards = (state: RootState) => state.addressBook.personCards;
 export const selectPersonCard = (state: RootState) => state.addressBook.personCards.find(a => a.dbId === state.addressBook.selectedPersonCardId);

@@ -23,10 +23,16 @@ function get<T>(path: string, token: string): Promise<T> {
             headers: getHeaders(token)
         })
             .then((response: Response) => {
-                response.json().then((resJson: T) => {
-                    resolve(resJson);
-                })
-                    .catch(err => reject(err));
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    return response.json().then((resJson?: T) => {
+                        resolve(resJson);
+                    });
+                } else {
+                    return response.text().then((resText?: string | T) => {
+                        resolve(resText as T);
+                    });
+                }
             })
             .catch(err => reject(err));
     });
@@ -86,10 +92,16 @@ function _delete<T>(path: string, token: string): Promise<T> {
             headers: getHeaders(token)
         })
             .then((response: Response) => {
-                response.json().then((resJson: T) => {
-                    resolve(resJson);
-                })
-                    .catch(err => reject(err));
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    return response.json().then((resJson?: T) => {
+                        resolve(resJson);
+                    });
+                } else {
+                    return response.text().then((resText?: string | T) => {
+                        resolve(resText as T);
+                    });
+                }
             })
             .catch(err => reject(err));
     });

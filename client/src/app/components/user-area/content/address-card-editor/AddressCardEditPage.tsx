@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { selectPersonCard, updatePersonCardAsync, addPersonCardAsync } from '../../../../store/address-book';
+import { selectPersonCard, updatePersonCardAsync, addPersonCardAsync, deletePersonCardAsync } from '../../../../store/address-book';
 import { IPersonCard } from '../../../../models/PersonCard.interface';
 import { NavigationService } from '../../../../services/navigation.service';
 
@@ -46,6 +46,13 @@ function AddressCardEditPage() {
         }
     }
 
+    function onDeleteClick() {
+        if (inputs.dbId)
+            (dispatch(deletePersonCardAsync(inputs.dbId)) as Promise<void>).then(() => {
+                NavigationService.toAddressBook();
+            });
+    }
+
     function onCancelClick() {
         NavigationService.goBack();
     }
@@ -71,7 +78,7 @@ function AddressCardEditPage() {
                     </div>
                     <div className="form-group col-md-6">
                         <label htmlFor="inputPhone">Phone</label>
-                        <input type="tel" className="form-control" id="inputPhone" name="phone" placeholder="Phone" pattern="[0-9]{3}-[0-9]{2}-[0-9]{3}" required onChange={handleChange} value={phone} />
+                        <input type="tel" className="form-control" id="inputPhone" name="phone" placeholder="Phone" pattern="\(?\+[0-9]{1,3}\)? ?-?[0-9]{1,3} ?-?[0-9]{3,5} ?-?[0-9]{4}( ?-?[0-9]{3})? ?(\w{1,10}\s?\d{1,6})?" required onChange={handleChange} value={phone} />
                     </div>
                 </div>
                 <div className="form-group">
@@ -79,6 +86,7 @@ function AddressCardEditPage() {
                     <input type="text" className="form-control" id="inputAddress" name="address" placeholder="1234 Main St" required onChange={handleChange} value={address} />
                 </div>
                 <button type="submit" className="btn btn-primary">Save</button>
+                {inputs.dbId ? <button type="button" className="btn btn-danger" onClick={onDeleteClick}>Delete</button> : ''}
                 <button type="button" className="btn" onClick={onCancelClick}>Cancel</button>
             </form>
         </div>
