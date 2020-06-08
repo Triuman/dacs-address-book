@@ -6,7 +6,8 @@
   "author": "triuman <alfanzo27@hotmail.com>",
   "license": "MIT",
   "scripts": {
-    "build": "cd ./client && yarn && yarn build && cd ../server && yarn && yarn tsc"
+    "start": "yarn node",
+    "build": "cd ../server && yarn && yarn tsc"
   },
   "engines": {
     "yarn": "1.x",
