@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "start": "yarn node",
-    "build": "cd ../server && yarn && yarn tsc"
+    "build": "cd ./server && yarn && yarn tsc"
   },
   "engines": {
     "yarn": "1.x",
