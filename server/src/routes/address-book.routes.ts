@@ -16,7 +16,7 @@ router.get('/:userId/:personCardId', async (req, res) => {
     const personCardDb = await db.getPersonCard(userId, personCardId);
     if (personCardDb) {
         personCardDb.dbId = personCardDb._id
-        res.status(200).json({ personCard: new PersonCard(personCardDb) });
+        res.status(200).json(new PersonCard(personCardDb));
     } else {
         res.sendStatus(404);
     }
@@ -32,7 +32,7 @@ router.get('/:userId', async (req, res) => {
                 personCardDbs[i].dbId = personCardDbs[i]._id
             personCards.push(new PersonCard(personCardDbs[i]));
         }
-        res.status(200).json({ personCards });
+        res.status(200).json(personCards);
 
     } catch (err) {
         res.status(500).json({ err });

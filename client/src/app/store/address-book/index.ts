@@ -1,10 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import { RootState, AppThunk } from '..';
-import { history } from '../../helpers/history'
 import { AddressBookService } from '../../services/address-book.service';
 import { IPersonCard } from '../../models/PersonCard.interface';
-import { useSelector } from 'react-redux';
 import { selectToken, selectUser } from '../session';
 
 
@@ -29,11 +27,16 @@ export const addressBookSlice = createSlice({
       state.personCards.push(action.payload);
     },
     updatePersonCard: (state, action: PayloadAction<IPersonCard>) => {
+
+      //Option 1: Immutable state
+      //state.personCards = {...state.personCards.filter(a => a.dbId !== action.payload.dbId), [action.payload.dbId]: action.payload};
+
+      //Option 2: if this does not work, use Option 1
+      //TODO: this may not work.
       const personCard = state.personCards.find(a => a.dbId === action.payload.dbId);
       if (personCard) {
         personCard.name = action.payload.name;
         personCard.surname = action.payload.surname;
-        personCard.age = action.payload.age;
         personCard.phone = action.payload.phone;
         personCard.email = action.payload.email;
         personCard.address = action.payload.address;
@@ -52,11 +55,13 @@ export const addressBookSlice = createSlice({
 const { addPersonCard, updatePersonCard, deletePersonCard } = addressBookSlice.actions;
 export const { setPersonCards, setSelectedPersonCardId } = addressBookSlice.actions;
 
-export const getAllPersonCards = (): AppThunk => dispatch => {
-  const token = useSelector(selectToken);
-  const userId = useSelector(selectUser)?.id;
+
+//TODO: put common parts of these methods into one.
+export const getAllPersonCards = (): AppThunk => (dispatch, getState) => {
+  const state = getState();
+  const token = selectToken(state);
+  const userId = selectUser(state)?.id;
   if (!token || !userId) {
-    history.push('/login');
     return;
   }
   AddressBookService.getAllPersonCards(token, userId)
@@ -65,37 +70,43 @@ export const getAllPersonCards = (): AppThunk => dispatch => {
     });
 };
 
-export const addPersonCardAsync = (personCard: IPersonCard): AppThunk => dispatch => {
-  const token = useSelector(selectToken);
-  const userId = useSelector(selectUser)?.id;
-  if (!token || !userId) {
-    history.push('/login');
-    return;
-  }
-  AddressBookService.addPersonCard(token, userId, personCard)
-    .then(() => {
-      dispatch(addPersonCard(personCard));
-    });
-};
+export const addPersonCardAsync = (personCard: IPersonCard): AppThunk | Promise<void> => (dispatch, getState) =>
+  new Promise((resolve, reject) => {
+    const state = getState();
+    const token = selectToken(state);
+    const userId = selectUser(state)?.id;
+    if (!token || !userId) {
+      reject();
+      return;
+    }
+    AddressBookService.addPersonCard(token, userId, personCard)
+      .then(() => {
+        dispatch(addPersonCard(personCard));
+        resolve();
+      });
+  });
 
-export const updatePersonCardAsync = (personCard: IPersonCard): AppThunk => dispatch => {
-  const token = useSelector(selectToken);
-  const userId = useSelector(selectUser)?.id;
-  if (!token || !userId) {
-    history.push('/login');
-    return;
-  }
-  AddressBookService.updatePersonCard(token, userId, personCard)
-    .then(() => {
-      dispatch(updatePersonCard(personCard));
-    });
-};
+export const updatePersonCardAsync = (personCard: IPersonCard): AppThunk | Promise<void> => (dispatch, getState) =>
+  new Promise<void>((resolve, reject) => {
+    const state = getState();
+    const token = selectToken(state);
+    const userId = selectUser(state)?.id;
+    if (!token || !userId) {
+      reject();
+      return;
+    }
+    AddressBookService.updatePersonCard(token, userId, personCard)
+      .then(() => {
+        dispatch(updatePersonCard(personCard));
+        resolve();
+      });
+  });
 
-export const deletePersonCardAsync = (personCardId: string): AppThunk => dispatch => {
-  const token = useSelector(selectToken);
-  const userId = useSelector(selectUser)?.id;
+export const deletePersonCardAsync = (personCardId: string): AppThunk => (dispatch, getState) => {
+  const state = getState();
+  const token = selectToken(state);
+  const userId = selectUser(state)?.id;
   if (!token || !userId) {
-    history.push('/login');
     return;
   }
   AddressBookService.deletePersonCard(token, userId, personCardId)
@@ -104,6 +115,7 @@ export const deletePersonCardAsync = (personCardId: string): AppThunk => dispatc
     });
 };
 
+export const selectAllPersonCards = (state: RootState) => state.addressBook.personCards;
 export const selectPersonCard = (state: RootState) => state.addressBook.personCards.find(a => a.dbId === state.addressBook.selectedPersonCardId);
 
 export default addressBookSlice.reducer;

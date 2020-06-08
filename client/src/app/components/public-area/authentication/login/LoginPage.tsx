@@ -2,26 +2,27 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import { history } from '../../../../helpers/history'
-import { login, selectIsLoggedIn } from '../../../../store/session';
+import { login, selectIsLoggedIn, loadSession } from '../../../../store/session';
 import { ICredentials } from '../../../../models/Credentials.interface';
+import { NavigationService } from '../../../../services/navigation.service';
 
 function LoginPage() {
+    const dispatch = useDispatch();
     const [inputs, setInputs] = useState<ICredentials>({
         username: '',
         password: ''
     });
     const [submitted, setSubmitted] = useState(false);
     const { username, password } = inputs;
-    const dispatch = useDispatch();
 
     const isLoggedIn = useSelector(selectIsLoggedIn);
     useEffect(() => {
+        dispatch(loadSession());
         //if user is already logged in, redirect to address book main page.
         if (isLoggedIn) {
-            history.push('/addressbook');
+            NavigationService.toAddressBook();
         }
-    }, []);
+    }, [isLoggedIn, dispatch]);
 
     function handleChange(e: any) {
         const { name, value } = e.target;
@@ -59,7 +60,12 @@ function LoginPage() {
                     <button className="btn btn-primary">
                         Login
                     </button>
-                    <Link to="/register" className="btn btn-link">Register</Link>
+                </div>
+                <div>
+                    If you don't have an account yet
+                    <div>
+                        <Link to="/register" className="btn btn-link">Register</Link>
+                    </div>
                 </div>
             </form>
         </div>

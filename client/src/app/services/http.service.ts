@@ -11,6 +11,7 @@ const baseUrl: string = 'http://localhost:8888';
 function getHeaders(token: string) {
     return {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'Authorization': token
     };
 }
@@ -39,10 +40,16 @@ function post<T1, T2>(path: string, token: string, body: T1): Promise<T2> {
             body: JSON.stringify(body)
         })
             .then((response: Response) => {
-                response.json().then((resJson: T2) => {
-                    resolve(resJson);
-                })
-                    .catch(err => reject(err));
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    return response.json().then((resJson?: T2) => {
+                        resolve(resJson);
+                    });
+                } else {
+                    return response.text().then((resText?: string | T2) => {
+                        resolve(resText as T2);
+                    });
+                }
             })
             .catch(err => reject(err));
     });
@@ -56,10 +63,16 @@ function put<T1, T2>(path: string, token: string, body: T1): Promise<T2> {
             body: JSON.stringify(body)
         })
             .then((response: Response) => {
-                response.json().then((resJson: T2) => {
-                    resolve(resJson);
-                })
-                    .catch(err => reject(err));
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    return response.json().then((resJson?: T2) => {
+                        resolve(resJson);
+                    });
+                } else {
+                    return response.text().then((resText?: string | T2) => {
+                        resolve(resText as T2);
+                    });
+                }
             })
             .catch(err => reject(err));
     });
