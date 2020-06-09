@@ -22,6 +22,7 @@ class App {
     }
 
     public listen(port: number) {
+        console.log('port', port);
         this.app.listen(port, () =>
             console.log(`Address Book App listening on port ${port}!`),
         );

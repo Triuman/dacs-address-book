@@ -21,6 +21,7 @@
     "typescript": "^3.9.5"
   },
   "scripts": {
-    "tsc": "tsc"
+    "tsc": "tsc",
+    "start": "node ./dist"
   }
 }
