@@ -6,7 +6,7 @@
   "author": "triuman <alfanzo27@hotmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "cd ./client && yarn server.js",
+    "start": "cd ./client && node server.js",
     "build": "cd ./client && yarn && yarn build"
   },
   "engines": {
