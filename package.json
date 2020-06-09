@@ -6,7 +6,7 @@
   "author": "triuman <alfanzo27@hotmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "yarn start",
+    "start": "cd ./client && yarn start",
     "build": "cd ./client && yarn && yarn build"
   },
   "engines": {

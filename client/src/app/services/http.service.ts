@@ -6,7 +6,7 @@ export const HttpService = {
     delete: _delete
 }
 
-const baseUrl: string = 'http://localhost:8888';
+const baseUrl: string = 'https://dacs-demo-server.herokuapp.com';
 
 function getHeaders(token: string) {
     return {
